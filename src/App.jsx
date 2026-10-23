@@ -1,42 +1,85 @@
-import {useState} from "react";
+
+import { useState } from "react";
 
 function App() {
+    const [todoList, setTodoList] = useState([]);
+    const [todoValue, setTodoValue] = useState("");
 
-    const[todoList, setTodoList] =useState([]);
-    const[todoValue, setTodoValue] = useState("");
-    //사용자가 input에 입력한 값을, 버튼을 눌렀을 때 todoList에 기록하는 "기능"=> 버튼에 onclick만들어야 되네?
-    //setTodoList를 통해 원래 있던 배열에 사용자가 입력한 값을 추가해서 덮어쓰기를 해야함
-    //그렇다면, "사용자가 입력한 값은 어떻게 구하지?"
+    // 할 일 추가
+    const handleSubmit = (event) => {
+        event.preventDefault();
 
-    //사용자가 입력한 값을 나중에 꺼내오는 건 불가능
-    //사용자가 키보드를 눌렀을 때 발동시킬 수 있는 속성 => onChange
-    //사용자가 입력한 값을 onChange를 통해 실시간 발동시켜서 기록을 먼저 받아놓는 것 => state가 필요함
-    //결론, 사용자가 input에 입력을 할 때마다 onChange가 발동되어서 그 값을 state인 todoValue에 기록하는 기능이 필요
+        if (todoValue.trim() === "") return;
 
-    //그런데
-    //onClick도 onChange도 이것들은 "사용자가 어떠한 사건"을 일으키는 상황(클릭, 작성)
-    //onClick={함수}             onClick={(사건에 대해서 리액트가 분석한 내용의 매개변수) => {실행할 내용}}
-    //'사건에 대해 리액트가 분석한 내용'을 이벤트(event)라고 부름
+        setTodoList((prevTodoList) => [
+            ...prevTodoList,
+            {
+                id: Date.now(),
+                text: todoValue.trim(),
+                completed: false
+            }
+        ]);
 
-    //버튼을 클릭한 이후에 해줘야 되는 일? => todoValue의 값을 todoList에 덧붙여주기만 하면 됨
+        setTodoValue("");
+    };
 
+    // 완료 / 미완료 상태 변경
+    const toggleTodo = (id) => {
+        setTodoList((prevTodoList) =>
+            prevTodoList.map((todo) =>
+                todo.id === id
+                    ? { ...todo, completed: !todo.completed }
+                    : todo
+            )
+        );
+    };
 
     return (
         <>
             <h1>My ToDo ({todoList.length})</h1>
-            <form>
-                <input type={"text"} placeholder={"Write your to do..."} onChange={(event) =>{setTodoValue(event.target.value)} } />
+
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    placeholder="Write your to do..."
+                    value={todoValue}
+                    onChange={(event) => {
+                        setTodoValue(event.target.value);
+                    }}
+                />
+
                 <button type="submit">Add To Do</button>
             </form>
-            <hr/>
+
+            <hr />
+
             <ul>
-                <li>더미</li>
-                <li>데이터</li>
-                <li>투두 추가</li>
+                {todoList.map((todo) => (
+                    <li key={todo.id}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={todo.completed}
+                                onChange={() => toggleTodo(todo.id)}
+                            />
+
+                            <span
+                                style={{
+                                    textDecoration: todo.completed
+                                        ? "line-through"
+                                        : "none"
+                                }}
+                            >
+                                {todo.text}
+                            </span>
+
+                            {todo.completed ? " (완료)" : " (미완료)"}
+                        </label>
+                    </li>
+                ))}
             </ul>
-
-
         </>
-    )
+    );
 }
+
 export default App;
